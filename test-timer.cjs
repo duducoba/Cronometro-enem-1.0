@@ -1,0 +1,32 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+let now = 100000;
+const elements = new Map();
+function element() {
+  const classes = new Set();
+  return {children:[],dataset:{},classList:{toggle(key,on){on ? classes.add(key) : classes.delete(key)},contains:key=>classes.has(key)},addEventListener(){},focus(){},showModal(){},close(){},set innerHTML(value){this.html=value;if(value.includes('data-end='))this.children=[...value.matchAll(/data-end="(\d+)"/g)].map(match=>Object.assign(element(),{dataset:{end:match[1]}}));},get innerHTML(){return this.html;}};
+}
+const registered = [];
+const context = vm.createContext({document:{getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},querySelectorAll(){return []},querySelector(){return element()},body:element(),addEventListener(){},modelContext:{registerTool(tool){registered.push(tool)}}},window:{addEventListener(){},location:{hash:""},scrollTo(){}},Date:{now:()=>now},setInterval(){},AbortController,console});
+vm.runInContext(fs.readFileSync(__dirname+'/dist/app.js','utf8'),context);
+const run = code => vm.runInContext(code,context);
+assert.equal(run('remaining'),19800);
+assert.equal(elements.get('marks').children.length,12);
+run('toggleTimer()');
+now+=1800000;run('tick()');
+assert.equal(run('remaining'),18000);
+assert.equal(elements.get('marks').children.filter(mark=>mark.classList.contains('passed')).length,1);
+run('toggleTimer()');now+=50000;run('tick()');assert.equal(run('remaining'),18000);
+assert.throws(()=>run('selectDay(2)'));
+run('toggleTimer()');now+=16200000;run('tick()');assert.equal(run('remaining'),1800);
+now+=900000;run('tick()');assert.equal(run('remaining'),900);
+assert.equal(elements.get('marks').children.filter(mark=>mark.classList.contains('passed')).length,11);
+now+=900000;run('tick()');assert.equal(run('remaining'),0);assert.equal(run('deadline'),null);
+run('resetTimer();selectDay(2)');assert.equal(run('remaining'),18000);assert.equal(elements.get('marks').children.length,11);
+assert.throws(()=>run('selectDay(3)'));
+assert.equal(registered[0].name,'start_enem_simulation');
+assert.throws(()=>registered[0].execute({day:3}));
+assert.equal(registered[0].execute({day:1}).status,'running');
+assert.throws(()=>registered[0].execute({day:2}));
+console.log('PASS: both days, 30/15-minute boundaries, pause, background catch-up, completion, reset, and tool handlers.');

@@ -1,0 +1,1 @@
+{"name":"quadro-enem","version":"1.0.0","private":true,"type":"module","scripts":{"build":"node build.cjs","test":"node test-timer.cjs && node test-auth.mjs"}}
