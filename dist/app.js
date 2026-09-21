@@ -21,7 +21,13 @@ function markLabel(seconds) {
 }
 function drawMarks() {
   const values = milestones(durations[selectedDay]);
-  $('marks').innerHTML = values.map((value, index) => `<li class="mark${value <= 1800 ? ' last' : ''}" data-end="${values[index + 1] ?? 0}" aria-label="${markLabel(value).replace(/<[^>]+>/g, '')} restantes">${markLabel(value)}</li>`).join('');
+  if(viewMode === 'authentic') values.push(0);
+  $('marks').innerHTML = values.map((value, index) => {
+    const minutes = 810 + (durations[selectedDay] - value) / 60;
+    const label = viewMode === 'authentic' ? `${Math.floor(minutes / 60)}h${minutes % 60 ? pad(minutes % 60) : ''}` : markLabel(value);
+    return `<li class="mark${value <= 1800 ? ' last' : ''}" data-end="${viewMode === 'authentic' ? value : values[index + 1] ?? 0}" aria-label="${label.replace(/<[^>]+>/g, '')}${viewMode === 'authentic' ? ', horário simulado' : ' restantes'}">${label}</li>`;
+  }).join('');
+  $('exam-period').textContent = `Início: 13h30 · Término: ${selectedDay === 1 ? '19h' : '18h30'}`;
 }
 function snapshot() { return {day: selectedDay, remainingSeconds: remaining, status: remaining === 0 ? 'finished' : deadline !== null ? 'running' : started ? 'paused' : 'ready'}; }
 function render() {
@@ -36,10 +42,11 @@ function render() {
   $('day-badge').textContent = `${selectedDay}º DIA`;
   $('start-help').textContent = started ? 'Mantenha esta página aberta durante o simulado.' : 'Tudo pronto? O tempo começa quando você iniciar.';
   document.body.classList.toggle('finished', remaining === 0);
+  document.body.classList.toggle('in-progress', started);
   let currentFound = false;
   let passed = 0;
   for (const mark of $('marks').children) {
-    const isPassed = remaining <= Number(mark.dataset.end);
+    const isPassed = started && remaining <= Number(mark.dataset.end);
     mark.classList.toggle('passed', isPassed);
     mark.classList.toggle('active', started && !isPassed && !currentFound);
     if (isPassed) passed++;
@@ -91,6 +98,7 @@ function showRoute() {
   }
   $('home-screen').hidden = isExam;
   $('exam-screen').hidden = !isExam;
+  document.body.classList.toggle('exam-open', isExam);
   document.title = isExam ? `Simulado · ${selectedDay}º dia — Quadro ENEM` : 'Quadro ENEM — seu tempo de prova';
   $(isExam ? 'exam-title' : 'welcome-title').focus();
   window.scrollTo(0, 0);
@@ -105,6 +113,7 @@ function setViewMode(mode) {
   if(!['complete','authentic'].includes(mode)) throw new Error('Visualização inválida.');
   viewMode = mode;
   document.body.classList.toggle('authentic', mode === 'authentic');
+  drawMarks(); render();
 }
 document.querySelectorAll('input[name="view-mode"]').forEach(input => input.addEventListener('change', () => setViewMode(input.value)));
 $('back-home').addEventListener('click', requestHome);

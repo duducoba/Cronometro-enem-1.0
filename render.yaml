@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: quadro-horarios-enem
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: ENEM_PASSWORD
+        sync: false

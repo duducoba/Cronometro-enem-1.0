@@ -29,12 +29,13 @@
       <div class="exam-toolbar">
         <fieldset id="view-mode" class="view-mode"><legend>Como deseja simular?</legend>
           <label><input type="radio" name="view-mode" value="complete" checked><span><strong>Com cronômetro</strong><small>Quadro verde e tempo em segundos</small></span></label>
-          <label><input type="radio" name="view-mode" value="authentic"><span><strong>Quadro autêntico</strong><small>Quadro branco, somente marcações</small></span></label>
+          <label><input type="radio" name="view-mode" value="authentic"><span><strong>Quadro autêntico</strong><small>Horários da prova, sem cronômetro</small></span></label>
         </fieldset>
         <div class="exam-controls"><button class="primary" id="toggle"><span aria-hidden="true">▶</span> Iniciar simulado</button><button class="reset" id="reset" hidden>Reiniciar simulado</button></div>
       </div>
       <section class="board" aria-labelledby="board-title">
         <div class="board-top"><div><span class="board-kicker">UMA QUESTÃO DE CADA VEZ.</span><h2 id="board-title">Quadro de horários</h2></div><span id="day-badge" class="day-badge">1º DIA</span></div>
+        <p id="exam-period" class="exam-period">Início: 13h30 · Término: 19h</p>
         <div class="clock-area"><div><span class="clock-label">TEMPO RESTANTE</span><div class="clock" id="clock" role="timer" aria-label="Tempo restante">05:30:00</div></div><span id="status" class="status">Aguardando início</span></div>
         <div class="board-rule"></div>
         <div class="marks-heading"><span>MARCAÇÕES DA PROVA</span><span id="interval-label">A cada 30 min · últimos 30 min em 2 × 15</span></div>
